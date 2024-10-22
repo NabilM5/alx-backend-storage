@@ -1,0 +1,4 @@
+// Find documents in the 'school' collection where the name is "Holberton school"
+var documents = db.school.find({ name: "Holberton school" }).toArray();
+// Print each document
+documents.forEach(printjson);
