@@ -1,0 +1,4 @@
+// Find all documents in the 'school' collection and convert the cursor to an array
+var documents = db.school.find().toArray();
+// Print each document
+documents.forEach(printjson);
