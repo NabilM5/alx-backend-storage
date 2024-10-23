@@ -3,9 +3,10 @@
 '''
 import uuid
 import redis
-from typing import Union, Optional
 from functools import wraps
 from typing import Any, Callable, Union
+
+
 def count_calls(method: Callable) -> Callable:
     '''Tracks the number of calls made to a method in a Cache class.
     '''
@@ -17,6 +18,8 @@ def count_calls(method: Callable) -> Callable:
             self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
     return invoker
+
+
 def call_history(method: Callable) -> Callable:
     '''Tracks the call details of a method in a Cache class.
     '''
@@ -33,6 +36,8 @@ def call_history(method: Callable) -> Callable:
             self._redis.rpush(out_key, output)
         return output
     return invoker
+
+
 def replay(fn: Callable) -> None:
     '''Displays the call history of a Cache class' method.
     '''
@@ -59,41 +64,23 @@ def replay(fn: Callable) -> None:
 
 
 class Cache:
-    def __init__(self):
-        """Initialize the Cache class with a Redis client instance
-        and flush the database."""
     '''Represents an object for storing data in a Redis data storage.
     '''
     def __init__(self) -> None:
         '''Initializes a Cache instance.
         '''
         self._redis = redis.Redis()
-        self._redis.flushdb()
         self._redis.flushdb(True)
 
     @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
-        """
-        Store the provided data in Redis using a randomly generated UUID key.
-        :param data: The data to store in Redis. Can be of type str,
-        bytes, int, or float.
-        :return: The UUID key as a string under which the data is stored.
-        """
-        key = str(uuid.uuid4())
-        self._redis.set(key, data)
-        return key
-if __name__ == "__main__":
-    cache = Cache()
-    data = b"hello"
-    key = cache.store(data)
-    print(key)
-    print(cache._redis.get(key))
         '''Stores a value in a Redis data storage and returns the key.
         '''
         data_key = str(uuid.uuid4())
         self._redis.set(data_key, data)
         return data_key
+
     def get(
             self,
             key: str,
@@ -103,10 +90,12 @@ if __name__ == "__main__":
         '''
         data = self._redis.get(key)
         return fn(data) if fn is not None else data
+
     def get_str(self, key: str) -> str:
         '''Retrieves a string value from a Redis data storage.
         '''
         return self.get(key, lambda x: x.decode('utf-8'))
+
     def get_int(self, key: str) -> int:
         '''Retrieves an integer value from a Redis data storage.
         '''
