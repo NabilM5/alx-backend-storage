@@ -15,8 +15,11 @@ def data_cacher(method: Callable) -> Callable:
     @wraps(method)
     def invoker(url: str) -> str:
         '''The wrapper function for caching the output and tracking the request.'''
-        # Increment count each time the URL is accessed
-        redis_store.incr(f'count:{url}')
+        # Increment count each time the URL is accessed and check increment result
+        count_result = redis_store.incr(f'count:{url}')
+        
+        if count_result is None:
+            return "Error: Count increment failed"
         
         # Check if there's a cached result
         result = redis_store.get(f'result:{url}')
@@ -25,7 +28,10 @@ def data_cacher(method: Callable) -> Callable:
         
         # Fetch and cache the result if not already cached
         result = method(url)
+        
+        # Set cache expiry for the result at 10 seconds
         redis_store.setex(f'result:{url}', 10, result)
+        
         return result
     return invoker
 
